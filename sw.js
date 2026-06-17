@@ -1,10 +1,10 @@
-const CACHE = 'jewel-note-v1';
+const CACHE = 'jewel-note-v2';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.svg',
-  '/icon-512.svg',
+  '/jewel-note/',
+  '/jewel-note/index.html',
+  '/jewel-note/manifest.json',
+  '/jewel-note/icon-192.svg',
+  '/jewel-note/icon-512.svg',
   'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap'
 ];
 
@@ -32,7 +32,7 @@ self.addEventListener('fetch', e => {
         const clone = res.clone();
         caches.open(CACHE).then(cache => cache.put(e.request, clone));
         return res;
-      }).catch(() => caches.match('/index.html'));
+      }).catch(() => caches.match('/jewel-note/index.html'));
     })
   );
 });
