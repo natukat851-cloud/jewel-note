@@ -181,6 +181,44 @@
 
   .jn-chip.jn-small { font-size: 12px; padding: 5px 11px; }
 
+  /* ---- icon-choice (イラストで選ぶ選択肢) ---- */
+  .jn-icon-choice-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .jn-icon-choice {
+    width: 76px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 6px 8px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .jn-icon-choice:hover { border-color: var(--gold); color: var(--ivory); }
+
+  .jn-icon-choice.jn-active {
+    background: var(--gold-soft);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .jn-icon-choice-svg { width: 30px; height: 30px; }
+
+  .jn-icon-choice-label {
+    font-size: 10.5px;
+    line-height: 1.3;
+    text-align: center;
+  }
+
   /* ---- tray (signature element) ---- */
   .jn-tray {
     display: grid;
@@ -385,6 +423,38 @@
     margin-top: 14px;
     padding-top: 14px;
     border-top: 1px solid var(--line);
+  }
+
+  /* フォームが開いているときはセクション全体を強調 */
+  .jn-step.jn-form-open {
+    background: #1a0f22;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 1px var(--gold), 0 8px 32px rgba(203,161,53,0.18);
+  }
+
+  .jn-step.jn-form-open .jn-add-toggle {
+    border-style: solid;
+    background: var(--gold-soft);
+  }
+
+  .jn-form-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    font-family: "Cormorant Garamond", serif;
+    font-size: 15px;
+    color: var(--gold);
+  }
+
+  .jn-form-header::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
   }
 
   .jn-text-input {
@@ -655,9 +725,8 @@
 </head>
 <body>
 <div class="jn-app">
-  <p class="jn-eyebrow">JEWEL NOTE</p>
-  <h1>今日のジュエリー、これで決まり</h1>
-  <p class="jn-lead">服の色と雰囲気を選ぶと、持っているネックレス・イヤリング・リングの中から、いちばん合う組み合わせを提案します。</p>
+  <h1>JEWEL NOTE</h1>
+  <p class="jn-lead">服の色・雰囲気・襟元から、手持ちのネックレス・イヤリング・リングのなかで定石に合う組み合わせを提案します。</p>
 
   <section class="jn-step">
     <h2><span class="jn-step-num">01</span>今日の服</h2>
@@ -670,9 +739,14 @@
       <div class="jn-chip-row" id="jn-outfit-tags"></div>
     </div>
     <div class="jn-field">
-      <span class="jn-label">襟元のかたち(ネックレスの長さ・ジャンルとの相性に使います)</span>
+      <span class="jn-label">襟元のかたち(ネックレス・イヤリング両方の相性に使います)</span>
       <div class="jn-chip-row" id="jn-neckline-chips"></div>
       <p class="jn-advice" id="jn-neckline-advice"></p>
+    </div>
+    <div class="jn-field">
+      <span class="jn-label">髪型(イヤリングとの相性に使います)</span>
+      <div class="jn-chip-row" id="jn-hairstyle-chips"></div>
+      <p class="jn-advice" id="jn-hairstyle-advice"></p>
     </div>
   </section>
 
@@ -688,6 +762,7 @@
     <div id="jn-item-list-wrap"></div>
     <button class="jn-add-toggle" id="jn-add-toggle">+ アクセサリーを追加する</button>
     <form class="jn-add-form" id="jn-add-form" hidden>
+      <div class="jn-form-header" id="jn-form-header">新しいアクセサリーを追加</div>
       <div class="jn-field">
         <span class="jn-label">名前</span>
         <input class="jn-text-input" id="jn-item-name" type="text" placeholder="例: パールの一粒ネックレス">
@@ -719,8 +794,12 @@
         <div class="jn-chip-row" id="jn-item-genre-tags"></div>
       </div>
       <div class="jn-field" id="jn-length-field">
-        <span class="jn-label">長さ</span>
+        <span class="jn-label">長さ(複数選択可・調整可能なネックレスはすべて選んでください)</span>
         <div class="jn-chip-row" id="jn-item-length-tags"></div>
+      </div>
+      <div class="jn-field" id="jn-motion-field">
+        <span class="jn-label">揺れ感・サイズ感</span>
+        <div class="jn-icon-choice-row" id="jn-item-motion-icons"></div>
       </div>
       <button type="submit" class="jn-submit" id="jn-submit-btn">アクセサリーを追加</button>
       <button type="button" class="jn-cancel-edit" id="jn-cancel-edit" hidden>編集をキャンセル</button>
@@ -776,48 +855,118 @@
     ring: RING_GENRES,
   };
 
-  const NECKLINE_OPTIONS = ['Vネック', '丸首・クルーネック', 'タートルネック', 'シャツ・襟あり', 'ボートネック・オフショルダー', 'ノーカラー・開きが大きい'];
+  const NECKLINE_OPTIONS = ['Vネック', '丸首・クルーネック', 'タートルネック', 'ハイネック', 'シャツ・襟あり', 'ボートネック・オフショルダー', 'ショルダー出し', 'ノーカラー・開きが大きい'];
 
   const NECKLINE_RULES = {
     'Vネック': {
       goodLengths: ['ロング(50cm~)'],
       goodGenres: ['ペンダント', 'チェーン', 'ロングネックレス・ロープ'],
       badLengths: ['ショート(チョーカー丈・~40cm)'],
+      earringGoodGenres: ['ドロップ・ピアス', 'スタッド'],
+      earringBadGenres: [],
+      earringAdvice: 'デコルテが開く分、存在感のあるドロップかすっきりとしたスタッドが定番。',
     },
     '丸首・クルーネック': {
       goodLengths: ['ミディアム(40~50cm)', 'ロング(50cm~)'],
       goodGenres: [],
       badLengths: ['ショート(チョーカー丈・~40cm)'],
+      earringGoodGenres: ['フープ', 'ドロップ・ピアス'],
+      earringBadGenres: [],
+      earringAdvice: 'フープや縦に動くドロップで顔周りに抜けを作るのが定番。',
     },
     'タートルネック': {
       goodLengths: ['ロング(50cm~)'],
       goodGenres: ['ロングネックレス・ロープ', 'チェーン'],
       badLengths: ['ショート(チョーカー丈・~40cm)', 'ミディアム(40~50cm)'],
+      earringGoodGenres: ['スタッド', 'フープ'],
+      earringBadGenres: ['ロング・ピアス'],
+      earringAdvice: '首元が詰まる分、耳元はスタッドかフープでコンパクトにまとめるのが定番。ロングは埋もれやすい。',
+    },
+    'ハイネック': {
+      goodLengths: ['ロング(50cm~)'],
+      goodGenres: ['ロングネックレス・ロープ', 'チェーン'],
+      badLengths: ['ショート(チョーカー丈・~40cm)', 'ミディアム(40~50cm)'],
+      earringGoodGenres: ['スタッド', 'フープ'],
+      earringBadGenres: ['ロング・ピアス'],
+      earringAdvice: 'タートルネックと同様、耳元はコンパクトにまとめるのが定番。',
     },
     'シャツ・襟あり': {
       goodLengths: ['ミディアム(40~50cm)'],
       goodGenres: ['パール連結(二連・三連)', 'パール'],
       badLengths: ['ショート(チョーカー丈・~40cm)'],
+      earringGoodGenres: ['スタッド', 'パール'],
+      earringBadGenres: [],
+      earringAdvice: '襟元がある分、イヤリングはスタッドやパールでさりげなくまとめるのが定番。',
     },
     'ボートネック・オフショルダー': {
       goodLengths: ['ショート(チョーカー丈・~40cm)'],
       goodGenres: ['チョーカー', 'パール'],
       badLengths: ['ロング(50cm~)'],
+      earringGoodGenres: ['スタッド', 'フープ'],
+      earringBadGenres: [],
+      earringAdvice: '鎖骨ラインが見える分、耳元はスタッドかフープで引き算するのが定番。',
+    },
+    'ショルダー出し': {
+      goodLengths: ['ショート(チョーカー丈・~40cm)', 'ミディアム(40~50cm)'],
+      goodGenres: ['チョーカー', 'ペンダント'],
+      badLengths: [],
+      earringGoodGenres: ['ロング・ピアス', 'ドロップ・ピアス'],
+      earringBadGenres: [],
+      earringAdvice: '肩・鎖骨が見える分、縦に長いピアスで首のラインを強調するのが定番。',
     },
     'ノーカラー・開きが大きい': {
       goodLengths: ['ショート(チョーカー丈・~40cm)', 'ミディアム(40~50cm)'],
       goodGenres: ['ペンダント', 'チョーカー'],
       badLengths: [],
+      earringGoodGenres: ['ドロップ・ピアス', 'スタッド'],
+      earringBadGenres: [],
+      earringAdvice: 'デコルテが開く分、ドロップかスタッドで視線を耳元に集めるのが定番。',
     },
   };
 
   const NECKLINE_ADVICE = {
-    'Vネック': 'Vの開きに沿うペンダントやYネックレスが定番。短いチョーカーは襟元と重なって喧嘩しやすいので注意。',
-    '丸首・クルーネック': 'デコルテが隠れる分、ミディアム~ロング丈で縦のラインを作るのが定番。チョーカーは詰まった印象になりやすい。',
-    'タートルネック': '首元はタートル自体に任せて、その上にロングネックレスやロープを重ねるのが定番。',
+    'Vネック': 'Vの開きに沿うペンダントやYネックレスが定番。短いチョーカーは襟元と重なって喧嘩しやすい。',
+    '丸首・クルーネック': 'ミディアム~ロング丈で縦のラインを作るのが定番。チョーカーは詰まった印象になりやすい。',
+    'タートルネック': '首元はタートル自体に任せて、ロングネックレスやロープを重ねるのが定番。',
+    'ハイネック': 'タートルネックと同様にロングで縦を出すのが定番。ショートは埋もれやすい。',
     'シャツ・襟あり': 'パールの二連・三連ネックレスがシャツの襟元と相性のいい定番の組み合わせ。',
     'ボートネック・オフショルダー': '鎖骨のラインに沿うチョーカーやショート丈が映える定番。',
+    'ショルダー出し': '肩が出る分、チョーカーやミディアム丈で鎖骨ラインを活かすのが定番。',
     'ノーカラー・開きが大きい': 'デコルテが見える分、ショート~ミディアムのペンダントで視線を集めるのが定番。',
+  };
+
+  // ---- 髪型 × イヤリング 定石 ----
+  const HAIRSTYLE_OPTIONS = ['おろす(ダウンスタイル)', 'ハーフアップ', 'アップ・まとめ髪', '耳かけ'];
+
+  const HAIRSTYLE_RULES = {
+    'おろす(ダウンスタイル)': {
+      goodGenres: ['スタッド', 'フープ'],
+      badGenres: ['ロング・ピアス'],
+      goodMotions: ['密着・揺れない', '小さく揺れる'],
+      badMotions: ['特大・存在感大'],
+      advice: '髪で耳元が隠れやすいので、スタッドやフープなどコンパクトなものが定番。ロングや特大サイズは埋もれやすい。',
+    },
+    'ハーフアップ': {
+      goodGenres: ['スタッド', 'ドロップ・ピアス', 'フープ'],
+      badGenres: [],
+      goodMotions: ['小さく揺れる', '大きく揺れる'],
+      badMotions: [],
+      advice: '耳が半分見える分、スタッドからドロップ・フープまで幅広く合わせやすい定番スタイル。',
+    },
+    'アップ・まとめ髪': {
+      goodGenres: ['ロング・ピアス', 'ドロップ・ピアス', 'フープ'],
+      badGenres: [],
+      goodMotions: ['大きく揺れる', '特大・存在感大'],
+      badMotions: [],
+      advice: '耳元がしっかり見える日は存在感のあるイヤリングが映えます。ロング・ドロップ・フープ、よく揺れるものが定番。',
+    },
+    '耳かけ': {
+      goodGenres: ['スタッド', 'フープ', 'ドロップ・ピアス'],
+      badGenres: [],
+      goodMotions: ['小さく揺れる', '大きく揺れる'],
+      badMotions: [],
+      advice: '耳元が見えやすいのでスタッド・フープ・小ぶりなドロップが定番。',
+    },
   };
 
 
@@ -858,6 +1007,16 @@
     },
   };
 
+  // イヤリングの揺れ感・サイズ感(ジャンルとは別軸の選択肢)
+  const EARRING_MOTION_OPTIONS = ['密着・揺れない', '小さく揺れる', '大きく揺れる', '特大・存在感大'];
+
+  const EARRING_MOTION_ICONS = {
+    '密着・揺れない': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="15" r="4.5" fill="currentColor"/></svg>',
+    '小さく揺れる': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="9" r="2.6" fill="currentColor"/><path d="M16 12 L16 18" stroke="currentColor" stroke-width="1.4"/><circle cx="16" cy="20.5" r="2.6" fill="currentColor"/></svg>',
+    '大きく揺れる': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="7" r="2.4" fill="currentColor"/><path d="M16 10 L16 19" stroke="currentColor" stroke-width="1.4"/><circle cx="16" cy="22.5" r="3.6" fill="currentColor"/></svg>',
+    '特大・存在感大': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="6" r="2.2" fill="currentColor"/><path d="M16 9 L13 14 L19 18 L14 23 L20 27" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  };
+
 
   const LENGTH_GAP_MESSAGE = {
     'ショート(チョーカー丈・~40cm)': 'チョーカー丈のネックレスがありません。ボートネックやノーカラーの服に映える一枚です。',
@@ -867,11 +1026,12 @@
 
   // ---- state ----
   let items = [];
-  let outfit = { color: '#f5f1ea', tags: [], neckline: '' };
+  let outfit = { color: '#f5f1ea', tags: [], neckline: '', hairstyle: '' };
   let activeTab = 'necklace';
   let galleryTab = 'all';
   let formGenre = '';
-  let formLength = '';
+  let formLengths = [];
+  let formMotion = '';
   let formPhoto = '';
   let editingId = null;
 
@@ -884,13 +1044,22 @@
         if (!it.colors || !it.colors.length) {
           it.colors = [{ hex: it.color || '#cba135', ratio: 100 }];
         }
+        if (!it.lengths) {
+          it.lengths = it.length ? [it.length] : [];
+        }
       });
-    } catch (e) { items = []; }
+    } catch (e) {
+      items = [];
+    }
     try {
       const raw = localStorage.getItem('jn-outfit');
-      outfit = raw ? JSON.parse(raw) : { color: '#f5f1ea', tags: [], neckline: '' };
+      outfit = raw ? JSON.parse(raw) : { color: '#f5f1ea', tags: [], neckline: '', hairstyle: '' };
       if (outfit.neckline === undefined) outfit.neckline = '';
-    } catch (e) { outfit = { color: '#f5f1ea', tags: [], neckline: '' }; }
+      if (outfit.hairstyle === undefined) outfit.hairstyle = '';
+      if (outfit.earringOutfit !== undefined) { delete outfit.earringOutfit; }
+    } catch (e) {
+      outfit = { color: '#f5f1ea', tags: [], neckline: '', hairstyle: '' };
+    }
   }
 
   function saveItems() {
@@ -938,6 +1107,7 @@
   }
 
   function colorScore(outfitHex, colors) {
+    if (!outfitHex) return 2;
     const list = (colors && colors.length) ? colors : [{ hex: '#cba135', ratio: 100 }];
     const total = list.reduce((s, c) => s + (c.ratio || 0), 0) || 100;
     return list.reduce((sum, c) => sum + ((c.ratio || 0) / total) * singleColorScore(outfitHex, c.hex), 0);
@@ -1012,19 +1182,61 @@
     if (item.category !== 'necklace' || !outfit.neckline) return null;
     const rule = NECKLINE_RULES[outfit.neckline];
     if (!rule) return null;
-    if (rule.badLengths.includes(item.length)) return 0;
-    if (rule.goodLengths.includes(item.length) || rule.goodGenres.includes(item.genre)) return 2;
+    const lengths = (item.lengths && item.lengths.length) ? item.lengths : (item.length ? [item.length] : []);
+    if (!lengths.length) {
+      return rule.goodGenres.includes(item.genre) ? 2 : 1;
+    }
+    // 調整可能なネックレスは、選択済みの長さの中で最も評価の良いものを採用する
+    if (lengths.some(l => rule.goodLengths.includes(l)) || rule.goodGenres.includes(item.genre)) return 2;
+    if (lengths.every(l => rule.badLengths.includes(l))) return 0;
     return 1;
+  }
+
+  function earringScore(item) {
+    if (item.category !== 'earring') return null;
+    let score = 0;
+    let counted = 0;
+
+    // 襟元ルール（necklineに統合）
+    if (outfit.neckline && item.genre) {
+      const rule = NECKLINE_RULES[outfit.neckline];
+      if (rule) {
+        if (rule.earringBadGenres && rule.earringBadGenres.includes(item.genre)) return 0;
+        if (rule.earringGoodGenres && rule.earringGoodGenres.includes(item.genre)) { score += 2; counted++; }
+        else { score += 1; counted++; }
+      }
+    }
+
+    // 髪型ルール
+    if (outfit.hairstyle && item.genre) {
+      const rule = HAIRSTYLE_RULES[outfit.hairstyle];
+      if (rule) {
+        if (rule.badGenres.includes(item.genre)) return 0;
+        if (rule.goodGenres.includes(item.genre)) { score += 2; counted++; }
+        else { score += 1; counted++; }
+      }
+    }
+
+    // 揺れ感・サイズ感ルール（髪型との組み合わせ）
+    if (outfit.hairstyle && item.motion) {
+      const rule = HAIRSTYLE_RULES[outfit.hairstyle];
+      if (rule && rule.goodMotions) {
+        if (rule.badMotions && rule.badMotions.includes(item.motion)) return 0;
+        if (rule.goodMotions.includes(item.motion)) { score += 2; counted++; }
+        else { score += 1; counted++; }
+      }
+    }
+
+    return counted ? score : null;
   }
 
   function totalScore(item) {
     let score = colorScore(outfit.color, item.colors) + styleScore(outfit.tags, item.styleTags);
     let max = 4;
     const nScore = necklineScore(item);
-    if (nScore !== null) {
-      score += nScore;
-      max = 6;
-    }
+    if (nScore !== null) { score += nScore; max += 2; }
+    const eScore = earringScore(item);
+    if (eScore !== null) { score += eScore; max += 2; }
     return { score, max };
   }
 
@@ -1041,11 +1253,12 @@
     wrap.innerHTML = '';
     PRESET_COLORS.forEach(c => {
       const btn = document.createElement('button');
-      btn.className = 'jn-swatch' + (sameColor(outfit.color, c.hex) ? ' jn-active' : '');
+      const active = outfit.color && sameColor(outfit.color, c.hex);
+      btn.className = 'jn-swatch' + (active ? ' jn-active' : '');
       btn.style.background = c.hex;
       btn.title = c.name;
       btn.addEventListener('click', () => {
-        outfit.color = c.hex;
+        outfit.color = active ? '' : c.hex;
         saveOutfit();
         renderAll();
       });
@@ -1053,13 +1266,21 @@
     });
     // custom color swatch
     const customWrap = document.createElement('div');
-    const isCustom = !PRESET_COLORS.some(c => sameColor(outfit.color, c.hex));
+    const isCustom = !!outfit.color && !PRESET_COLORS.some(c => sameColor(outfit.color, c.hex));
     customWrap.className = 'jn-swatch jn-swatch-custom' + (isCustom ? ' jn-active' : '');
     customWrap.style.background = isCustom ? outfit.color : 'linear-gradient(135deg, #e8a0bf, #5a7896, #e0b23c)';
-    customWrap.title = 'カスタムカラー';
+    customWrap.title = isCustom ? 'カスタムカラー(タップで解除)' : 'カスタムカラー';
     const input = document.createElement('input');
     input.type = 'color';
-    input.value = outfit.color;
+    input.value = outfit.color || '#cba135';
+    input.addEventListener('click', (e) => {
+      if (isCustom) {
+        e.preventDefault();
+        outfit.color = '';
+        saveOutfit();
+        renderAll();
+      }
+    });
     input.addEventListener('input', (e) => {
       outfit.color = e.target.value;
       saveOutfit();
@@ -1070,7 +1291,7 @@
   }
 
   function sameColor(a, b) {
-    return a.toLowerCase() === b.toLowerCase();
+    return !!a && !!b && a.toLowerCase() === b.toLowerCase();
   }
 
   function renderOutfitTags() {
@@ -1110,12 +1331,37 @@
       wrap.appendChild(chip);
     });
     const advice = document.getElementById('jn-neckline-advice');
-    advice.textContent = outfit.neckline
-      ? NECKLINE_ADVICE[outfit.neckline]
-      : '選択すると、ネックレスの長さ・ジャンルとの定番の組み合わせ方を表示します。';
+    if (outfit.neckline) {
+      const rule = NECKLINE_RULES[outfit.neckline];
+      const necklaceText = NECKLINE_ADVICE[outfit.neckline] || '';
+      const earringText = (rule && rule.earringAdvice) ? '　イヤリング：' + rule.earringAdvice : '';
+      advice.textContent = necklaceText + earringText;
+    } else {
+      advice.textContent = '選択すると、ネックレス・イヤリングそれぞれとの定番の組み合わせを表示します。';
+    }
   }
 
-  // ---- render: tray ----
+  function renderHairstyleChips() {
+    const wrap = document.getElementById('jn-hairstyle-chips');
+    wrap.innerHTML = '';
+    HAIRSTYLE_OPTIONS.forEach(opt => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'jn-chip' + (outfit.hairstyle === opt ? ' jn-active' : '');
+      chip.textContent = opt;
+      chip.addEventListener('click', () => {
+        outfit.hairstyle = outfit.hairstyle === opt ? '' : opt;
+        saveOutfit();
+        renderAll();
+      });
+      wrap.appendChild(chip);
+    });
+    const advice = document.getElementById('jn-hairstyle-advice');
+    const rule = outfit.hairstyle ? HAIRSTYLE_RULES[outfit.hairstyle] : null;
+    advice.textContent = rule
+      ? rule.advice
+      : '選択すると、イヤリングの形との定番の組み合わせを表示します。';
+  }
   function renderTray() {
     const tray = document.getElementById('jn-tray');
     tray.innerHTML = '';
@@ -1221,11 +1467,7 @@
       const badge = badgeInfo(score, max);
       const row = document.createElement('div');
       row.className = 'jn-item';
-      const extraTags = [item.genre, item.length].filter(Boolean);
-      const tagsHtml = item.styleTags.concat(item.materialTags, extraTags)
-        .map(t => '<span class="jn-item-tag">' + escapeHtml(t) + '</span>')
-        .join('');
-      row.innerHTML =
+      const extraTags = [item.genre, item.motion].concat(item.lengths || []).filter(Boolean);
         '<div class="jn-item-swatch" style="background:' + colorsToGradient(item.colors) + '"></div>' +
         '<div class="jn-item-info">' +
           '<div class="jn-item-name">' + escapeHtml(item.name) + '</div>' +
@@ -1354,21 +1596,42 @@
 
     const lengthField = document.getElementById('jn-length-field');
     lengthField.style.display = activeTab === 'necklace' ? '' : 'none';
-    if (activeTab !== 'necklace') return;
-
-    const lengthWrap = document.getElementById('jn-item-length-tags');
-    lengthWrap.innerHTML = '';
-    NECKLACE_LENGTHS.forEach(l => {
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'jn-chip jn-small' + (formLength === l ? ' jn-active' : '');
-      chip.textContent = l;
-      chip.addEventListener('click', () => {
-        formLength = formLength === l ? '' : l;
-        renderGenreFormFields();
+    if (activeTab === 'necklace') {
+      const lengthWrap = document.getElementById('jn-item-length-tags');
+      lengthWrap.innerHTML = '';
+      NECKLACE_LENGTHS.forEach(l => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'jn-chip jn-small' + (formLengths.includes(l) ? ' jn-active' : '');
+        chip.textContent = l;
+        chip.addEventListener('click', () => {
+          if (formLengths.includes(l)) formLengths = formLengths.filter(x => x !== l);
+          else formLengths.push(l);
+          renderGenreFormFields();
+        });
+        lengthWrap.appendChild(chip);
       });
-      lengthWrap.appendChild(chip);
-    });
+    }
+
+    const motionField = document.getElementById('jn-motion-field');
+    motionField.style.display = activeTab === 'earring' ? '' : 'none';
+    if (activeTab === 'earring') {
+      const motionWrap = document.getElementById('jn-item-motion-icons');
+      motionWrap.innerHTML = '';
+      EARRING_MOTION_OPTIONS.forEach(m => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'jn-icon-choice' + (formMotion === m ? ' jn-active' : '');
+        card.innerHTML =
+          '<span class="jn-icon-choice-svg">' + EARRING_MOTION_ICONS[m] + '</span>' +
+          '<span class="jn-icon-choice-label">' + m + '</span>';
+        card.addEventListener('click', () => {
+          formMotion = formMotion === m ? '' : m;
+          renderGenreFormFields();
+        });
+        motionWrap.appendChild(card);
+      });
+    }
   }
 
   // ---- photo upload ----
@@ -1438,7 +1701,7 @@
           '<span class="jn-sparkle jn-sparkle-2">✧</span>' +
         '</div>';
     }
-    const extraTags = [item.genre, item.length].filter(Boolean);
+    const extraTags = [item.genre, item.motion].concat(item.lengths || []).filter(Boolean);
     const tagsHtml = item.styleTags.concat(item.materialTags, extraTags)
       .slice(0, 3)
       .map(t => '<span class="jn-item-tag">' + escapeHtml(t) + '</span>')
@@ -1499,7 +1762,7 @@
       }
 
       if (items.some(i => i.category === 'necklace')) {
-        const necklaceLengths = new Set(items.filter(i => i.category === 'necklace').map(i => i.length).filter(Boolean));
+        const necklaceLengths = new Set(items.filter(i => i.category === 'necklace').flatMap(i => i.lengths || []));
         NECKLACE_LENGTHS.forEach(len => {
           if (!necklaceLengths.has(len)) tips.push(LENGTH_GAP_MESSAGE[len]);
         });
@@ -1542,7 +1805,8 @@
     formStyleTags = [];
     formMaterialTags = [];
     formGenre = '';
-    formLength = '';
+    formLengths = [];
+    formMotion = '';
     formPhoto = '';
     formColors = [{ hex: '#cba135', ratio: 100 }];
     document.getElementById('jn-item-photo').value = '';
@@ -1568,7 +1832,8 @@
     formStyleTags = item.styleTags.slice();
     formMaterialTags = item.materialTags.slice();
     formGenre = item.genre || '';
-    formLength = item.length || '';
+    formLengths = (item.lengths && item.lengths.length) ? item.lengths.slice() : (item.length ? [item.length] : []);
+    formMotion = item.motion || '';
     formPhoto = item.photo || '';
     document.getElementById('jn-add-form').hidden = false;
     document.getElementById('jn-status').textContent = '';
@@ -1595,6 +1860,10 @@
     toggle.addEventListener('click', () => {
       form.hidden = !form.hidden;
       if (form.hidden) resetForm();
+      const section = form.closest('.jn-step');
+      section.classList.toggle('jn-form-open', !form.hidden);
+      const header = document.getElementById('jn-form-header');
+      if (header) header.textContent = editingId ? 'アクセサリーを編集中' : '新しいアクセサリーを追加';
       toggle.textContent = form.hidden ? '+ アクセサリーを追加する' : '閉じる';
     });
 
@@ -1622,7 +1891,8 @@
         styleTags: formStyleTags.slice(),
         materialTags: formMaterialTags.slice(),
         genre: formGenre,
-        length: activeTab === 'necklace' ? formLength : '',
+        lengths: activeTab === 'necklace' ? formLengths.slice() : [],
+        motion: activeTab === 'earring' ? formMotion : '',
       };
 
       if (editingId) {
@@ -1647,6 +1917,7 @@
     renderColorSwatches();
     renderOutfitTags();
     renderNecklineChips();
+    renderHairstyleChips();
     renderTray();
     renderTabs();
     renderItemList();
@@ -1655,6 +1926,8 @@
     renderSuggestions();
     const toggle = document.getElementById('jn-add-toggle');
     const form = document.getElementById('jn-add-form');
+    const section = form.closest('.jn-step');
+    section.classList.toggle('jn-form-open', !form.hidden);
     toggle.textContent = form.hidden ? '+ ' + CATEGORY_LABELS[activeTab] + 'を追加する' : '閉じる';
   }
 

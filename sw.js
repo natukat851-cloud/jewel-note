@@ -1,4 +1,4 @@
-const CACHE = 'jewel-note-v2';
+const CACHE = 'jewel-note-v3';
 const ASSETS = [
   '/jewel-note/',
   '/jewel-note/index.html',
