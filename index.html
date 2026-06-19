@@ -130,7 +130,9 @@
     padding: 0;
   }
 
-  .jn-swatch:hover { transform: translateY(-2px); }
+  @media (hover: hover) {
+    .jn-swatch:hover { transform: translateY(-2px); }
+  }
 
   .jn-swatch.jn-active {
     border-color: var(--gold);
@@ -171,7 +173,9 @@
     transition: all 0.15s ease;
   }
 
-  .jn-chip:hover { border-color: var(--gold); color: var(--ivory); }
+  @media (hover: hover) {
+    .jn-chip:hover { border-color: var(--gold); color: var(--ivory); }
+  }
 
   .jn-chip.jn-active {
     background: var(--gold-soft);
@@ -203,7 +207,9 @@
     transition: all 0.15s ease;
   }
 
-  .jn-icon-choice:hover { border-color: var(--gold); color: var(--ivory); }
+  @media (hover: hover) {
+    .jn-icon-choice:hover { border-color: var(--gold); color: var(--ivory); }
+  }
 
   .jn-icon-choice.jn-active {
     background: var(--gold-soft);
@@ -1468,6 +1474,10 @@
       const row = document.createElement('div');
       row.className = 'jn-item';
       const extraTags = [item.genre, item.motion].concat(item.lengths || []).filter(Boolean);
+      const tagsHtml = item.styleTags.concat(item.materialTags, extraTags)
+        .map(t => '<span class="jn-item-tag">' + escapeHtml(t) + '</span>')
+        .join('');
+      row.innerHTML =
         '<div class="jn-item-swatch" style="background:' + colorsToGradient(item.colors) + '"></div>' +
         '<div class="jn-item-info">' +
           '<div class="jn-item-name">' + escapeHtml(item.name) + '</div>' +
