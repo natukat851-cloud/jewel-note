@@ -1,0 +1,1923 @@
+<!-- JEWEL NOTE: 今日の服に合うアクセサリーの組み合わせを提案するツール -->
+<style>
+  :root {
+    --bg: #2a1f2d;
+    --surface: #382b3c;
+    --surface-2: #45354a;
+    --tray: #4f3d56;
+    --gold: #cba135;
+    --gold-soft: rgba(203, 161, 53, 0.16);
+    --ivory: #f4ede6;
+    --muted: #b9a8b6;
+    --ok: #b09cc4;
+    --ok-soft: rgba(176, 156, 196, 0.14);
+    --avoid: #8a7b88;
+    --line: rgba(244, 237, 230, 0.1);
+    font-family: "Work Sans", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap');
+
+  * { box-sizing: border-box; }
+
+  .jn-app {
+    background: var(--bg);
+    color: var(--ivory);
+    border-radius: 20px;
+    padding: 28px 24px 36px;
+    max-width: 720px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .jn-eyebrow {
+    font-family: "Work Sans", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    color: var(--gold);
+    margin: 0 0 10px;
+    text-transform: uppercase;
+  }
+
+  .jn-app h1 {
+    font-family: "Cormorant Garamond", serif;
+    font-weight: 600;
+    font-size: 32px;
+    margin: 0 0 10px;
+    letter-spacing: 0.02em;
+  }
+
+  .jn-lead {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0 0 28px;
+    max-width: 46ch;
+  }
+
+  .jn-step {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+
+  .jn-step h2 {
+    font-family: "Cormorant Garamond", serif;
+    font-weight: 600;
+    font-size: 20px;
+    margin: 0 0 16px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .jn-step-num {
+    font-family: "Work Sans", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    padding: 3px 9px;
+  }
+
+  .jn-field { margin-bottom: 16px; }
+  .jn-field:last-child { margin-bottom: 0; }
+
+  .jn-label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---- swatches ---- */
+  .jn-swatch-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .jn-swatch {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+    padding: 0;
+  }
+
+  .jn-swatch:hover { transform: translateY(-2px); }
+
+  .jn-swatch.jn-active {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-soft), inset 0 0 0 1px rgba(0,0,0,0.15);
+  }
+
+  .jn-swatch-custom {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .jn-swatch-custom input[type="color"] {
+    position: absolute;
+    inset: -4px;
+    width: calc(100% + 8px);
+    height: calc(100% + 8px);
+    border: none;
+    cursor: pointer;
+    background: none;
+  }
+
+  /* ---- tag chips ---- */
+  .jn-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .jn-chip {
+    font-family: "Work Sans", sans-serif;
+    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .jn-chip:hover { border-color: var(--gold); color: var(--ivory); }
+
+  .jn-chip.jn-active {
+    background: var(--gold-soft);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .jn-chip.jn-small { font-size: 12px; padding: 5px 11px; }
+
+  /* ---- icon-choice (イラストで選ぶ選択肢) ---- */
+  .jn-icon-choice-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .jn-icon-choice {
+    width: 76px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 6px 8px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .jn-icon-choice:hover { border-color: var(--gold); color: var(--ivory); }
+
+  .jn-icon-choice.jn-active {
+    background: var(--gold-soft);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .jn-icon-choice-svg { width: 30px; height: 30px; }
+
+  .jn-icon-choice-label {
+    font-size: 10.5px;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  /* ---- tray (signature element) ---- */
+  .jn-tray {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .jn-tray-slot {
+    background: var(--tray);
+    border-radius: 14px;
+    padding: 16px 12px;
+    text-align: center;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.25);
+    border: 1px solid transparent;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .jn-tray-slot.jn-good {
+    border-color: var(--gold);
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.25), 0 0 0 1px var(--gold), 0 8px 22px rgba(203,161,53,0.22);
+  }
+
+  .jn-tray-slot.jn-ok { border-color: var(--ok); }
+
+  .jn-tray-icon { color: var(--gold); margin-bottom: 6px; }
+
+  .jn-tray-category {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .jn-tray-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    word-break: break-word;
+  }
+
+  .jn-tray-swatch {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    margin: 0 auto 8px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+  }
+
+  .jn-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+  }
+
+  .jn-badge.jn-good { background: var(--gold-soft); color: var(--gold); }
+  .jn-badge.jn-ok { background: var(--ok-soft); color: var(--ok); }
+  .jn-badge.jn-avoid { background: rgba(138,123,136,0.18); color: var(--avoid); }
+
+  .jn-tray-empty {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+
+  .jn-cohesion {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 14px 2px 0;
+    text-align: center;
+  }
+
+  .jn-cohesion.jn-good-text { color: var(--gold); }
+
+  .jn-advice {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 10px 2px 0;
+    line-height: 1.6;
+    border-left: 2px solid var(--gold);
+    padding-left: 10px;
+  }
+
+  .jn-tray-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  /* ---- wardrobe list ---- */
+  .jn-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .jn-tab {
+    font-family: "Work Sans", sans-serif;
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor: pointer;
+    flex: 1;
+    text-align: center;
+  }
+
+  .jn-tab.jn-active {
+    background: var(--gold-soft);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .jn-item-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+
+  .jn-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface-2);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+
+  .jn-item-swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+  }
+
+  .jn-item-info { flex: 1; min-width: 0; }
+  .jn-item-name { font-size: 14px; margin-bottom: 4px; }
+  .jn-item-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+  .jn-item-tag {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 2px 8px;
+  }
+
+  .jn-item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .jn-item-edit,
+  .jn-item-delete {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    padding: 4px;
+  }
+
+  .jn-item-delete { font-size: 18px; }
+
+  .jn-item-edit:hover,
+  .jn-item-delete:hover { color: var(--gold); }
+
+  .jn-empty-msg {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    padding: 18px 8px;
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+
+  /* ---- add form ---- */
+  .jn-add-toggle {
+    width: 100%;
+    font-family: "Work Sans", sans-serif;
+    font-size: 13px;
+    padding: 11px;
+    border-radius: 10px;
+    border: 1px dashed var(--gold);
+    background: none;
+    color: var(--gold);
+    cursor: pointer;
+  }
+
+  .jn-add-toggle:hover { background: var(--gold-soft); }
+
+  .jn-add-form {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* フォームが開いているときはセクション全体を強調 */
+  .jn-step.jn-form-open {
+    background: #1a0f22;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 1px var(--gold), 0 8px 32px rgba(203,161,53,0.18);
+  }
+
+  .jn-step.jn-form-open .jn-add-toggle {
+    border-style: solid;
+    background: var(--gold-soft);
+  }
+
+  .jn-form-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    font-family: "Cormorant Garamond", serif;
+    font-size: 15px;
+    color: var(--gold);
+  }
+
+  .jn-form-header::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+  }
+
+  .jn-text-input {
+    width: 100%;
+    font-family: "Work Sans", sans-serif;
+    font-size: 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--ivory);
+  }
+
+  .jn-text-input:focus { outline: 1px solid var(--gold); }
+
+  .jn-color-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .jn-color-row input[type="color"] {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background: none;
+    padding: 0;
+  }
+
+  /* ---- multi color picker ---- */
+  .jn-color-field-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .jn-color-field-row:last-child { margin-bottom: 0; }
+
+  .jn-color-pick {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background: none;
+    padding: 0;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+  }
+
+  .jn-ratio-input {
+    width: 56px;
+    font-family: "Work Sans", sans-serif;
+    font-size: 13px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 8px;
+    color: var(--ivory);
+  }
+
+  .jn-ratio-input:focus { outline: 1px solid var(--gold); }
+
+  .jn-ratio-suffix {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .jn-color-remove {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 4px;
+    margin-left: auto;
+  }
+
+  .jn-color-remove:hover { color: var(--gold); }
+
+  .jn-add-color {
+    font-family: "Work Sans", sans-serif;
+    font-size: 12px;
+    margin-top: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px dashed var(--gold);
+    background: none;
+    color: var(--gold);
+    cursor: pointer;
+  }
+
+  .jn-add-color:hover { background: var(--gold-soft); }
+  .jn-add-color[hidden] { display: none; }
+
+
+  .jn-submit {
+    width: 100%;
+    font-family: "Work Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: var(--gold);
+    color: #2a1f2d;
+    cursor: pointer;
+    margin-top: 16px;
+  }
+
+  .jn-submit:hover { background: #ddb748; }
+
+  .jn-cancel-edit {
+    width: 100%;
+    font-family: "Work Sans", sans-serif;
+    font-size: 12px;
+    padding: 8px;
+    border-radius: 10px;
+    border: none;
+    background: none;
+    color: var(--muted);
+    text-decoration: underline;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+
+  .jn-cancel-edit:hover { color: var(--ivory); }
+
+  .jn-status {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 10px;
+    min-height: 16px;
+  }
+
+  /* ---- photo upload ---- */
+  .jn-photo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .jn-photo-preview {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .jn-photo-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .jn-file-label {
+    font-size: 13px;
+    color: var(--gold);
+    border: 1px dashed var(--gold);
+    border-radius: 10px;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+
+  .jn-file-label:hover { background: var(--gold-soft); }
+
+  .jn-file-input { display: none; }
+
+  .jn-photo-clear {
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  /* ---- gallery ---- */
+  .jn-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+  }
+
+  .jn-gallery-card {
+    background: var(--surface-2);
+    border-radius: 14px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .jn-gallery-img {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .jn-gallery-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .jn-gallery-illust {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .jn-gallery-icon-wrap { width: 52%; height: 52%; }
+
+  .jn-sparkle {
+    position: absolute;
+    color: var(--gold);
+  }
+
+  .jn-sparkle-1 { top: 10px; right: 12px; font-size: 14px; opacity: 0.75; }
+  .jn-sparkle-2 { bottom: 12px; left: 14px; font-size: 10px; opacity: 0.5; }
+
+  .jn-gallery-name {
+    font-size: 13px;
+    margin-bottom: 4px;
+    word-break: break-word;
+  }
+
+  .jn-gallery-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+  }
+
+  /* ---- suggestions ---- */
+  .jn-suggestion-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .jn-suggestion-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 13px;
+    background: var(--surface-2);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+
+  .jn-suggestion-icon {
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 480px) {
+    .jn-tray { grid-template-columns: 1fr; }
+    .jn-tray-slot { min-height: auto; flex-direction: row; justify-content: flex-start; gap: 10px; text-align: left; padding: 12px; }
+    .jn-tray-icon, .jn-tray-swatch { margin: 0; }
+    .jn-tray-name { margin-bottom: 0; }
+    .jn-tray-meta { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .jn-tray-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  }
+</style>
+
+<div class="jn-app">
+  <h1>JEWEL NOTE</h1>
+  <p class="jn-lead">服の色・雰囲気・襟元から、手持ちのネックレス・イヤリング・リングのなかで定石に合う組み合わせを提案します。</p>
+
+  <section class="jn-step">
+    <h2><span class="jn-step-num">01</span>今日の服</h2>
+    <div class="jn-field">
+      <span class="jn-label">色</span>
+      <div class="jn-swatch-row" id="jn-color-swatches"></div>
+    </div>
+    <div class="jn-field">
+      <span class="jn-label">雰囲気(複数選べます)</span>
+      <div class="jn-chip-row" id="jn-outfit-tags"></div>
+    </div>
+    <div class="jn-field">
+      <span class="jn-label">襟元のかたち(ネックレス・イヤリング両方の相性に使います)</span>
+      <div class="jn-chip-row" id="jn-neckline-chips"></div>
+      <p class="jn-advice" id="jn-neckline-advice"></p>
+    </div>
+    <div class="jn-field">
+      <span class="jn-label">髪型(イヤリングとの相性に使います)</span>
+      <div class="jn-chip-row" id="jn-hairstyle-chips"></div>
+      <p class="jn-advice" id="jn-hairstyle-advice"></p>
+    </div>
+  </section>
+
+  <section class="jn-step">
+    <h2><span class="jn-step-num">02</span>おすすめの組み合わせ</h2>
+    <div class="jn-tray" id="jn-tray"></div>
+    <p class="jn-cohesion" id="jn-cohesion"></p>
+  </section>
+
+  <section class="jn-step">
+    <h2><span class="jn-step-num">03</span>持っているアクセサリー</h2>
+    <div class="jn-tabs" id="jn-tabs"></div>
+    <div id="jn-item-list-wrap"></div>
+    <button class="jn-add-toggle" id="jn-add-toggle">+ アクセサリーを追加する</button>
+    <form class="jn-add-form" id="jn-add-form" hidden>
+      <div class="jn-form-header" id="jn-form-header">新しいアクセサリーを追加</div>
+      <div class="jn-field">
+        <span class="jn-label">名前</span>
+        <input class="jn-text-input" id="jn-item-name" type="text" placeholder="例: パールの一粒ネックレス">
+      </div>
+      <div class="jn-field">
+        <span class="jn-label">写真(任意・登録すると「眺める」一覧に表示されます。なければ色に合わせた簡易イラストを表示します)</span>
+        <div class="jn-photo-row">
+          <div class="jn-photo-preview" id="jn-photo-preview"></div>
+          <label class="jn-file-label" for="jn-item-photo">写真を選ぶ</label>
+          <input type="file" accept="image/*" id="jn-item-photo" class="jn-file-input">
+          <span class="jn-photo-clear" id="jn-photo-clear" hidden>削除</span>
+        </div>
+      </div>
+      <div class="jn-field">
+        <span class="jn-label">色(最大3色まで・割合を指定できます)</span>
+        <div id="jn-color-fields"></div>
+        <button type="button" class="jn-add-color" id="jn-add-color">+ 色を追加</button>
+      </div>
+      <div class="jn-field">
+        <span class="jn-label">雰囲気タグ(合うものを選択。未選択ならどんな服にも合わせやすいアイテムとして扱います)</span>
+        <div class="jn-chip-row" id="jn-item-style-tags"></div>
+      </div>
+      <div class="jn-field">
+        <span class="jn-label">素材タグ(任意・組み合わせ提案の参考にします)</span>
+        <div class="jn-chip-row" id="jn-item-material-tags"></div>
+      </div>
+      <div class="jn-field">
+        <span class="jn-label">ジャンル(任意・コレクションのイラストに反映されます)</span>
+        <div class="jn-chip-row" id="jn-item-genre-tags"></div>
+      </div>
+      <div class="jn-field" id="jn-length-field">
+        <span class="jn-label">長さ(複数選択可・調整可能なネックレスはすべて選んでください)</span>
+        <div class="jn-chip-row" id="jn-item-length-tags"></div>
+      </div>
+      <div class="jn-field" id="jn-motion-field">
+        <span class="jn-label">揺れ感・サイズ感</span>
+        <div class="jn-icon-choice-row" id="jn-item-motion-icons"></div>
+      </div>
+      <button type="submit" class="jn-submit" id="jn-submit-btn">アクセサリーを追加</button>
+      <button type="button" class="jn-cancel-edit" id="jn-cancel-edit" hidden>編集をキャンセル</button>
+      <p class="jn-status" id="jn-status"></p>
+    </form>
+  </section>
+
+  <section class="jn-step">
+    <h2><span class="jn-step-num">04</span>コレクションを眺める</h2>
+    <div class="jn-tabs" id="jn-gallery-tabs"></div>
+    <div class="jn-gallery-grid" id="jn-gallery-grid"></div>
+  </section>
+
+  <section class="jn-step">
+    <h2><span class="jn-step-num">05</span>足りないものチェック</h2>
+    <div id="jn-suggestions"></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const STYLE_TAGS = ['カジュアル', 'フォーマル', 'きれいめ', 'ナチュラル', 'ストリート', 'ガーリー', 'モード'];
+  const MATERIAL_TAGS = ['ゴールド', 'シルバー', 'パール', 'カラーストーン', 'ミックスメタル'];
+
+  const PRESET_COLORS = [
+    { name: '白', hex: '#f5f1ea' },
+    { name: '黒', hex: '#222222' },
+    { name: 'グレー', hex: '#9b9b9b' },
+    { name: 'ベージュ', hex: '#d8c3a5' },
+    { name: 'ネイビー', hex: '#2c3e58' },
+    { name: 'ブラウン', hex: '#6b4423' },
+    { name: 'デニム', hex: '#5a7896' },
+    { name: '赤', hex: '#b23a48' },
+    { name: 'ピンク', hex: '#e8a0bf' },
+    { name: 'グリーン', hex: '#6e8b5a' },
+    { name: 'イエロー', hex: '#e0b23c' },
+    { name: 'パープル', hex: '#7e5c8a' },
+  ];
+
+  const CATEGORIES = ['necklace', 'earring', 'ring'];
+  const CATEGORY_LABELS = { necklace: 'ネックレス', earring: 'イヤリング', ring: 'リング' };
+
+  const NECKLACE_GENRES = ['チェーン', 'パール', 'パール連結(二連・三連)', 'ペンダント', 'チョーカー', 'ロングネックレス・ロープ', 'ステートメント'];
+  const NECKLACE_LENGTHS = ['ショート(チョーカー丈・~40cm)', 'ミディアム(40~50cm)', 'ロング(50cm~)'];
+  const EARRING_GENRES = ['スタッド', 'フープ', 'ドロップ・ピアス', 'ロング・ピアス'];
+  const RING_GENRES = ['シンプルリング', '一粒石', 'パヴェ・装飾', '太めリング・バンド'];
+
+  const GENRE_OPTIONS_BY_CATEGORY = {
+    necklace: NECKLACE_GENRES,
+    earring: EARRING_GENRES,
+    ring: RING_GENRES,
+  };
+
+  const NECKLINE_OPTIONS = ['Vネック', '丸首・クルーネック', 'タートルネック', 'ハイネック', 'シャツ・襟あり', 'ボートネック・オフショルダー', 'ショルダー出し', 'ノーカラー・開きが大きい'];
+
+  const NECKLINE_RULES = {
+    'Vネック': {
+      goodLengths: ['ロング(50cm~)'],
+      goodGenres: ['ペンダント', 'チェーン', 'ロングネックレス・ロープ'],
+      badLengths: ['ショート(チョーカー丈・~40cm)'],
+      earringGoodGenres: ['ドロップ・ピアス', 'スタッド'],
+      earringBadGenres: [],
+      earringAdvice: 'デコルテが開く分、存在感のあるドロップかすっきりとしたスタッドが定番。',
+    },
+    '丸首・クルーネック': {
+      goodLengths: ['ミディアム(40~50cm)', 'ロング(50cm~)'],
+      goodGenres: [],
+      badLengths: ['ショート(チョーカー丈・~40cm)'],
+      earringGoodGenres: ['フープ', 'ドロップ・ピアス'],
+      earringBadGenres: [],
+      earringAdvice: 'フープや縦に動くドロップで顔周りに抜けを作るのが定番。',
+    },
+    'タートルネック': {
+      goodLengths: ['ロング(50cm~)'],
+      goodGenres: ['ロングネックレス・ロープ', 'チェーン'],
+      badLengths: ['ショート(チョーカー丈・~40cm)', 'ミディアム(40~50cm)'],
+      earringGoodGenres: ['スタッド', 'フープ'],
+      earringBadGenres: ['ロング・ピアス'],
+      earringAdvice: '首元が詰まる分、耳元はスタッドかフープでコンパクトにまとめるのが定番。ロングは埋もれやすい。',
+    },
+    'ハイネック': {
+      goodLengths: ['ロング(50cm~)'],
+      goodGenres: ['ロングネックレス・ロープ', 'チェーン'],
+      badLengths: ['ショート(チョーカー丈・~40cm)', 'ミディアム(40~50cm)'],
+      earringGoodGenres: ['スタッド', 'フープ'],
+      earringBadGenres: ['ロング・ピアス'],
+      earringAdvice: 'タートルネックと同様、耳元はコンパクトにまとめるのが定番。',
+    },
+    'シャツ・襟あり': {
+      goodLengths: ['ミディアム(40~50cm)'],
+      goodGenres: ['パール連結(二連・三連)', 'パール'],
+      badLengths: ['ショート(チョーカー丈・~40cm)'],
+      earringGoodGenres: ['スタッド', 'パール'],
+      earringBadGenres: [],
+      earringAdvice: '襟元がある分、イヤリングはスタッドやパールでさりげなくまとめるのが定番。',
+    },
+    'ボートネック・オフショルダー': {
+      goodLengths: ['ショート(チョーカー丈・~40cm)'],
+      goodGenres: ['チョーカー', 'パール'],
+      badLengths: ['ロング(50cm~)'],
+      earringGoodGenres: ['スタッド', 'フープ'],
+      earringBadGenres: [],
+      earringAdvice: '鎖骨ラインが見える分、耳元はスタッドかフープで引き算するのが定番。',
+    },
+    'ショルダー出し': {
+      goodLengths: ['ショート(チョーカー丈・~40cm)', 'ミディアム(40~50cm)'],
+      goodGenres: ['チョーカー', 'ペンダント'],
+      badLengths: [],
+      earringGoodGenres: ['ロング・ピアス', 'ドロップ・ピアス'],
+      earringBadGenres: [],
+      earringAdvice: '肩・鎖骨が見える分、縦に長いピアスで首のラインを強調するのが定番。',
+    },
+    'ノーカラー・開きが大きい': {
+      goodLengths: ['ショート(チョーカー丈・~40cm)', 'ミディアム(40~50cm)'],
+      goodGenres: ['ペンダント', 'チョーカー'],
+      badLengths: [],
+      earringGoodGenres: ['ドロップ・ピアス', 'スタッド'],
+      earringBadGenres: [],
+      earringAdvice: 'デコルテが開く分、ドロップかスタッドで視線を耳元に集めるのが定番。',
+    },
+  };
+
+  const NECKLINE_ADVICE = {
+    'Vネック': 'Vの開きに沿うペンダントやYネックレスが定番。短いチョーカーは襟元と重なって喧嘩しやすい。',
+    '丸首・クルーネック': 'ミディアム~ロング丈で縦のラインを作るのが定番。チョーカーは詰まった印象になりやすい。',
+    'タートルネック': '首元はタートル自体に任せて、ロングネックレスやロープを重ねるのが定番。',
+    'ハイネック': 'タートルネックと同様にロングで縦を出すのが定番。ショートは埋もれやすい。',
+    'シャツ・襟あり': 'パールの二連・三連ネックレスがシャツの襟元と相性のいい定番の組み合わせ。',
+    'ボートネック・オフショルダー': '鎖骨のラインに沿うチョーカーやショート丈が映える定番。',
+    'ショルダー出し': '肩が出る分、チョーカーやミディアム丈で鎖骨ラインを活かすのが定番。',
+    'ノーカラー・開きが大きい': 'デコルテが見える分、ショート~ミディアムのペンダントで視線を集めるのが定番。',
+  };
+
+  // ---- 髪型 × イヤリング 定石 ----
+  const HAIRSTYLE_OPTIONS = ['おろす(ダウンスタイル)', 'ハーフアップ', 'アップ・まとめ髪', '耳かけ'];
+
+  const HAIRSTYLE_RULES = {
+    'おろす(ダウンスタイル)': {
+      goodGenres: ['スタッド', 'フープ'],
+      badGenres: ['ロング・ピアス'],
+      goodMotions: ['密着・揺れない', '小さく揺れる'],
+      badMotions: ['特大・存在感大'],
+      advice: '髪で耳元が隠れやすいので、スタッドやフープなどコンパクトなものが定番。ロングや特大サイズは埋もれやすい。',
+    },
+    'ハーフアップ': {
+      goodGenres: ['スタッド', 'ドロップ・ピアス', 'フープ'],
+      badGenres: [],
+      goodMotions: ['小さく揺れる', '大きく揺れる'],
+      badMotions: [],
+      advice: '耳が半分見える分、スタッドからドロップ・フープまで幅広く合わせやすい定番スタイル。',
+    },
+    'アップ・まとめ髪': {
+      goodGenres: ['ロング・ピアス', 'ドロップ・ピアス', 'フープ'],
+      badGenres: [],
+      goodMotions: ['大きく揺れる', '特大・存在感大'],
+      badMotions: [],
+      advice: '耳元がしっかり見える日は存在感のあるイヤリングが映えます。ロング・ドロップ・フープ、よく揺れるものが定番。',
+    },
+    '耳かけ': {
+      goodGenres: ['スタッド', 'フープ', 'ドロップ・ピアス'],
+      badGenres: [],
+      goodMotions: ['小さく揺れる', '大きく揺れる'],
+      badMotions: [],
+      advice: '耳元が見えやすいのでスタッド・フープ・小ぶりなドロップが定番。',
+    },
+  };
+
+
+  const ICONS = {
+    necklace: '<svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6c0 12 8 18 12 18s12-6 12-18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="16" cy="25" r="2.6" fill="currentColor"/></svg>',
+    earring: '<svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="8" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M16 12c0 0 -4.5 6 -4.5 9a4.5 4.5 0 0 0 9 0c0-3-4.5-9-4.5-9z" fill="currentColor"/></svg>',
+    ring: '<svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="20" r="8" stroke="currentColor" stroke-width="2.4"/><path d="M11 12 L16 5 L21 12 Z" fill="currentColor"/></svg>',
+  };
+
+  const ICONS_LARGE = {
+    necklace: '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6c0 12 8 18 12 18s12-6 12-18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="16" cy="25" r="2.8" fill="currentColor"/></svg>',
+    earring: '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="8" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M16 12c0 0 -4.5 6 -4.5 9a4.5 4.5 0 0 0 9 0c0-3-4.5-9-4.5-9z" fill="currentColor"/></svg>',
+    ring: '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="20" r="8" stroke="currentColor" stroke-width="2.4"/><path d="M11 12 L16 5 L21 12 Z" fill="currentColor"/></svg>',
+  };
+
+  // ジャンルごとの詳細イラスト。未設定・該当なしの場合は ICONS_LARGE のシンプルな形にフォールバックする。
+  const ICON_VARIANTS = {
+    necklace: {
+      'チェーン': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6c0 12 8 18 12 18s12-6 12-18" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>',
+      'パール': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6c0 12 8 18 12 18s12-6 12-18" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.35"/><circle cx="8.5" cy="13.5" r="1.8" fill="currentColor"/><circle cx="12.5" cy="19.5" r="2.1" fill="currentColor"/><circle cx="16" cy="22" r="2.4" fill="currentColor"/><circle cx="19.5" cy="19.5" r="2.1" fill="currentColor"/><circle cx="23.5" cy="13.5" r="1.8" fill="currentColor"/></svg>',
+      'パール連結(二連・三連)': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5c0 11 8 16 12 16s12-5 12-16" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M6 6c0 13 7 19 10 19s10-6 10-19" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>',
+      'ペンダント': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6c0 10 8 14 12 14s12-4 12-14" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M16 19c-2.8 0-5 2.6-5 5.2a5 5 0 0 0 10 0c0-2.6-2.2-5.2-5-5.2z" fill="currentColor"/></svg>',
+      'チョーカー': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8c0 5.5 5 8.5 10 8.5s10-3 10-8.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="16" cy="18" r="2" fill="currentColor"/></svg>',
+      'ロングネックレス・ロープ': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5c0 14 9 21 12 21s12-7 12-21" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="16" cy="24" r="3.2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>',
+      'ステートメント': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6c0 9 8 13 12 13s12-4 12-13" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><rect x="11.5" y="19.5" width="9" height="9" rx="1.5" transform="rotate(45 16 24)" fill="currentColor"/></svg>',
+    },
+    earring: {
+      'スタッド': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="14" r="5" fill="currentColor"/></svg>',
+      'フープ': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="7" r="1.8" fill="currentColor"/><circle cx="16" cy="17" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>',
+      'ドロップ・ピアス': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="8" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M16 12c0 0 -4.5 6 -4.5 9a4.5 4.5 0 0 0 9 0c0-3-4.5-9-4.5-9z" fill="currentColor"/></svg>',
+      'ロング・ピアス': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="6" r="2.6" fill="currentColor"/><path d="M16 9 L16 22" stroke="currentColor" stroke-width="1.4"/><circle cx="16" cy="25" r="2.8" fill="currentColor"/></svg>',
+    },
+    ring: {
+      'シンプルリング': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="18" r="9" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+      '一粒石': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="20" r="8" stroke="currentColor" stroke-width="2.4"/><path d="M11 12 L16 5 L21 12 Z" fill="currentColor"/></svg>',
+      'パヴェ・装飾': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="19" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10.5" cy="11" r="1.6" fill="currentColor"/><circle cx="16" cy="8.5" r="1.8" fill="currentColor"/><circle cx="21.5" cy="11" r="1.6" fill="currentColor"/></svg>',
+      '太めリング・バンド': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="17" r="9" fill="none" stroke="currentColor" stroke-width="5"/></svg>',
+    },
+  };
+
+  // イヤリングの揺れ感・サイズ感(ジャンルとは別軸の選択肢)
+  const EARRING_MOTION_OPTIONS = ['密着・揺れない', '小さく揺れる', '大きく揺れる', '特大・存在感大'];
+
+  const EARRING_MOTION_ICONS = {
+    '密着・揺れない': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="15" r="4.5" fill="currentColor"/></svg>',
+    '小さく揺れる': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="9" r="2.6" fill="currentColor"/><path d="M16 12 L16 18" stroke="currentColor" stroke-width="1.4"/><circle cx="16" cy="20.5" r="2.6" fill="currentColor"/></svg>',
+    '大きく揺れる': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="7" r="2.4" fill="currentColor"/><path d="M16 10 L16 19" stroke="currentColor" stroke-width="1.4"/><circle cx="16" cy="22.5" r="3.6" fill="currentColor"/></svg>',
+    '特大・存在感大': '<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="6" r="2.2" fill="currentColor"/><path d="M16 9 L13 14 L19 18 L14 23 L20 27" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  };
+
+
+  const LENGTH_GAP_MESSAGE = {
+    'ショート(チョーカー丈・~40cm)': 'チョーカー丈のネックレスがありません。ボートネックやノーカラーの服に映える一枚です。',
+    'ミディアム(40~50cm)': 'ミディアム丈のネックレスがありません。シャツの襟元に合わせやすい丈です。',
+    'ロング(50cm~)': 'ロング丈のネックレスがありません。タートルネックやVネックに重ねやすい丈です。',
+  };
+
+  // ---- state ----
+  let items = [];
+  let outfit = { color: '#f5f1ea', tags: [], neckline: '', hairstyle: '' };
+  let activeTab = 'necklace';
+  let galleryTab = 'all';
+  let formGenre = '';
+  let formLengths = [];
+  let formMotion = '';
+  let formPhoto = '';
+  let editingId = null;
+
+  // ---- storage ----
+  async function load() {
+    try {
+      const res = await window.storage.get('jn-items', false);
+      items = res ? JSON.parse(res.value) : [];
+      items.forEach(it => {
+        if (!it.colors || !it.colors.length) {
+          it.colors = [{ hex: it.color || '#cba135', ratio: 100 }];
+        }
+        if (!it.lengths) {
+          it.lengths = it.length ? [it.length] : [];
+        }
+      });
+    } catch (e) {
+      items = [];
+    }
+    try {
+      const res = await window.storage.get('jn-outfit', false);
+      outfit = raw ? JSON.parse(raw) : { color: '#f5f1ea', tags: [], neckline: '', hairstyle: '' };
+      if (outfit.neckline === undefined) outfit.neckline = '';
+      if (outfit.hairstyle === undefined) outfit.hairstyle = '';
+      if (outfit.earringOutfit !== undefined) { delete outfit.earringOutfit; }
+    } catch (e) {
+      outfit = { color: '#f5f1ea', tags: [], neckline: '', hairstyle: '' };
+    }
+  }
+
+  async function saveItems() {
+    try { await window.storage.set('jn-items', JSON.stringify(items), false); } catch (e) {}
+  }
+  async function saveOutfit() {
+    try { await window.storage.set('jn-outfit', JSON.stringify(outfit), false); } catch (e) {}
+  }
+
+  // ---- color math ----
+  function hexToHsl(hex) {
+    let r = parseInt(hex.slice(1, 3), 16) / 255;
+    let g = parseInt(hex.slice(3, 5), 16) / 255;
+    let b = parseInt(hex.slice(5, 7), 16) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+    const d = max - min;
+    if (d !== 0) {
+      s = d / (1 - Math.abs(2 * l - 1));
+      switch (max) {
+        case r: h = ((g - b) / d) % 6; break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+    return { h, s: s * 100, l: l * 100 };
+  }
+
+  function isNeutral(hsl) {
+    return hsl.s < 15 || hsl.l < 14 || hsl.l > 90;
+  }
+
+  function singleColorScore(outfitHex, itemHex) {
+    const a = hexToHsl(outfitHex);
+    const b = hexToHsl(itemHex);
+    if (isNeutral(a) || isNeutral(b)) return 2;
+    let diff = Math.abs(a.h - b.h);
+    if (diff > 180) diff = 360 - diff;
+    if (diff <= 30) return 2;
+    if (diff >= 150) return 2;
+    if (diff <= 90) return 1;
+    return 0;
+  }
+
+  function colorScore(outfitHex, colors) {
+    if (!outfitHex) return 2;
+    const list = (colors && colors.length) ? colors : [{ hex: '#cba135', ratio: 100 }];
+    const total = list.reduce((s, c) => s + (c.ratio || 0), 0) || 100;
+    return list.reduce((sum, c) => sum + ((c.ratio || 0) / total) * singleColorScore(outfitHex, c.hex), 0);
+  }
+
+  // 割合に応じた円グラフ風のグラデーション(スウォッチ表示用)
+  function colorsToGradient(colors) {
+    if (!colors || !colors.length) return '#cba135';
+    if (colors.length === 1) return colors[0].hex;
+    let acc = 0;
+    const stops = colors.map(c => {
+      const start = acc;
+      acc += (c.ratio || 0);
+      return c.hex + ' ' + start + '% ' + acc + '%';
+    });
+    return 'conic-gradient(' + stops.join(', ') + ')';
+  }
+
+  function dominantColor(colors) {
+    if (!colors || !colors.length) return { hex: '#cba135', ratio: 100 };
+    return colors.slice().sort((a, b) => (b.ratio || 0) - (a.ratio || 0))[0];
+  }
+
+  // コレクション用のやさしいパステル背景(複数色は割合通りに配色)
+  function galleryBackground(colors) {
+    const list = (colors && colors.length) ? colors : [{ hex: '#cba135', ratio: 100 }];
+    if (list.length === 1) {
+      const hsl = hexToHsl(list[0].hex);
+      const s = Math.min(hsl.s, 35);
+      return 'linear-gradient(135deg, hsl(' + Math.round(hsl.h) + ', ' + Math.round(s) + '%, 92%), hsl(' + Math.round(hsl.h) + ', ' + Math.round(s) + '%, 80%))';
+    }
+    let acc = 0;
+    const stops = list.map(c => {
+      const hsl = hexToHsl(c.hex);
+      const s = Math.min(hsl.s, 35);
+      const start = acc;
+      acc += (c.ratio || 0);
+      return 'hsl(' + Math.round(hsl.h) + ', ' + Math.round(s) + '%, 88%) ' + start + '% ' + acc + '%';
+    });
+    return 'conic-gradient(' + stops.join(', ') + ')';
+  }
+
+  // フォーム入力中の色配列(割合の合計が100になるよう整える)
+  function equalizeRatios(colors) {
+    const n = colors.length;
+    if (!n) return;
+    const base = Math.floor(100 / n);
+    colors.forEach((c, i) => { c.ratio = (i === n - 1) ? (100 - base * (n - 1)) : base; });
+  }
+
+  function normalizeColors(colors) {
+    const total = colors.reduce((s, c) => s + (c.ratio || 0), 0);
+    let result;
+    if (total <= 0) {
+      result = colors.map(c => ({ hex: c.hex, ratio: 0 }));
+      equalizeRatios(result);
+    } else {
+      result = colors.map(c => ({ hex: c.hex, ratio: Math.round((c.ratio || 0) / total * 100) }));
+      const diff = 100 - result.reduce((s, c) => s + c.ratio, 0);
+      if (diff !== 0 && result.length) result[0].ratio += diff;
+    }
+    return result;
+  }
+
+  function styleScore(outfitTags, itemTags) {
+    if (!itemTags.length) return 2;
+    const hit = itemTags.some(t => outfitTags.includes(t));
+    return hit ? 2 : 1;
+  }
+
+  function necklineScore(item) {
+    if (item.category !== 'necklace' || !outfit.neckline) return null;
+    const rule = NECKLINE_RULES[outfit.neckline];
+    if (!rule) return null;
+    const lengths = (item.lengths && item.lengths.length) ? item.lengths : (item.length ? [item.length] : []);
+    if (!lengths.length) {
+      return rule.goodGenres.includes(item.genre) ? 2 : 1;
+    }
+    // 調整可能なネックレスは、選択済みの長さの中で最も評価の良いものを採用する
+    if (lengths.some(l => rule.goodLengths.includes(l)) || rule.goodGenres.includes(item.genre)) return 2;
+    if (lengths.every(l => rule.badLengths.includes(l))) return 0;
+    return 1;
+  }
+
+  function earringScore(item) {
+    if (item.category !== 'earring') return null;
+    let score = 0;
+    let counted = 0;
+
+    // 襟元ルール（necklineに統合）
+    if (outfit.neckline && item.genre) {
+      const rule = NECKLINE_RULES[outfit.neckline];
+      if (rule) {
+        if (rule.earringBadGenres && rule.earringBadGenres.includes(item.genre)) return 0;
+        if (rule.earringGoodGenres && rule.earringGoodGenres.includes(item.genre)) { score += 2; counted++; }
+        else { score += 1; counted++; }
+      }
+    }
+
+    // 髪型ルール
+    if (outfit.hairstyle && item.genre) {
+      const rule = HAIRSTYLE_RULES[outfit.hairstyle];
+      if (rule) {
+        if (rule.badGenres.includes(item.genre)) return 0;
+        if (rule.goodGenres.includes(item.genre)) { score += 2; counted++; }
+        else { score += 1; counted++; }
+      }
+    }
+
+    // 揺れ感・サイズ感ルール（髪型との組み合わせ）
+    if (outfit.hairstyle && item.motion) {
+      const rule = HAIRSTYLE_RULES[outfit.hairstyle];
+      if (rule && rule.goodMotions) {
+        if (rule.badMotions && rule.badMotions.includes(item.motion)) return 0;
+        if (rule.goodMotions.includes(item.motion)) { score += 2; counted++; }
+        else { score += 1; counted++; }
+      }
+    }
+
+    return counted ? score : null;
+  }
+
+  function totalScore(item) {
+    let score = colorScore(outfit.color, item.colors) + styleScore(outfit.tags, item.styleTags);
+    let max = 4;
+    const nScore = necklineScore(item);
+    if (nScore !== null) { score += nScore; max += 2; }
+    const eScore = earringScore(item);
+    if (eScore !== null) { score += eScore; max += 2; }
+    return { score, max };
+  }
+
+  function badgeInfo(score, max) {
+    const ratio = score / max;
+    if (ratio >= 0.8) return { cls: 'jn-good', label: '◎ よく合う' };
+    if (ratio >= 0.6) return { cls: 'jn-ok', label: '○ 合わせやすい' };
+    return { cls: 'jn-avoid', label: '△ 印象が変わるかも' };
+  }
+
+  // ---- render: outfit ----
+  function renderColorSwatches() {
+    const wrap = document.getElementById('jn-color-swatches');
+    wrap.innerHTML = '';
+    PRESET_COLORS.forEach(c => {
+      const btn = document.createElement('button');
+      const active = outfit.color && sameColor(outfit.color, c.hex);
+      btn.className = 'jn-swatch' + (active ? ' jn-active' : '');
+      btn.style.background = c.hex;
+      btn.title = c.name;
+      btn.addEventListener('click', () => {
+        outfit.color = active ? '' : c.hex;
+        saveOutfit();
+        renderAll();
+      });
+      wrap.appendChild(btn);
+    });
+    // custom color swatch
+    const customWrap = document.createElement('div');
+    const isCustom = !!outfit.color && !PRESET_COLORS.some(c => sameColor(outfit.color, c.hex));
+    customWrap.className = 'jn-swatch jn-swatch-custom' + (isCustom ? ' jn-active' : '');
+    customWrap.style.background = isCustom ? outfit.color : 'linear-gradient(135deg, #e8a0bf, #5a7896, #e0b23c)';
+    customWrap.title = isCustom ? 'カスタムカラー(タップで解除)' : 'カスタムカラー';
+    const input = document.createElement('input');
+    input.type = 'color';
+    input.value = outfit.color || '#cba135';
+    input.addEventListener('click', (e) => {
+      if (isCustom) {
+        e.preventDefault();
+        outfit.color = '';
+        saveOutfit();
+        renderAll();
+      }
+    });
+    input.addEventListener('input', (e) => {
+      outfit.color = e.target.value;
+      saveOutfit();
+      renderAll();
+    });
+    customWrap.appendChild(input);
+    wrap.appendChild(customWrap);
+  }
+
+  function sameColor(a, b) {
+    return !!a && !!b && a.toLowerCase() === b.toLowerCase();
+  }
+
+  function renderOutfitTags() {
+    const wrap = document.getElementById('jn-outfit-tags');
+    wrap.innerHTML = '';
+    STYLE_TAGS.forEach(tag => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'jn-chip' + (outfit.tags.includes(tag) ? ' jn-active' : '');
+      chip.textContent = tag;
+      chip.addEventListener('click', () => {
+        if (outfit.tags.includes(tag)) {
+          outfit.tags = outfit.tags.filter(t => t !== tag);
+        } else {
+          outfit.tags.push(tag);
+        }
+        saveOutfit();
+        renderAll();
+      });
+      wrap.appendChild(chip);
+    });
+  }
+
+  function renderNecklineChips() {
+    const wrap = document.getElementById('jn-neckline-chips');
+    wrap.innerHTML = '';
+    NECKLINE_OPTIONS.forEach(opt => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'jn-chip' + (outfit.neckline === opt ? ' jn-active' : '');
+      chip.textContent = opt;
+      chip.addEventListener('click', () => {
+        outfit.neckline = outfit.neckline === opt ? '' : opt;
+        saveOutfit();
+        renderAll();
+      });
+      wrap.appendChild(chip);
+    });
+    const advice = document.getElementById('jn-neckline-advice');
+    if (outfit.neckline) {
+      const rule = NECKLINE_RULES[outfit.neckline];
+      const necklaceText = NECKLINE_ADVICE[outfit.neckline] || '';
+      const earringText = (rule && rule.earringAdvice) ? '　イヤリング：' + rule.earringAdvice : '';
+      advice.textContent = necklaceText + earringText;
+    } else {
+      advice.textContent = '選択すると、ネックレス・イヤリングそれぞれとの定番の組み合わせを表示します。';
+    }
+  }
+
+  function renderHairstyleChips() {
+    const wrap = document.getElementById('jn-hairstyle-chips');
+    wrap.innerHTML = '';
+    HAIRSTYLE_OPTIONS.forEach(opt => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'jn-chip' + (outfit.hairstyle === opt ? ' jn-active' : '');
+      chip.textContent = opt;
+      chip.addEventListener('click', () => {
+        outfit.hairstyle = outfit.hairstyle === opt ? '' : opt;
+        saveOutfit();
+        renderAll();
+      });
+      wrap.appendChild(chip);
+    });
+    const advice = document.getElementById('jn-hairstyle-advice');
+    const rule = outfit.hairstyle ? HAIRSTYLE_RULES[outfit.hairstyle] : null;
+    advice.textContent = rule
+      ? rule.advice
+      : '選択すると、イヤリングの形との定番の組み合わせを表示します。';
+  }
+  function renderTray() {
+    const tray = document.getElementById('jn-tray');
+    tray.innerHTML = '';
+    const picks = {};
+    CATEGORIES.forEach(cat => {
+      const catItems = items.filter(i => i.category === cat);
+      const slot = document.createElement('div');
+      slot.className = 'jn-tray-slot';
+
+      if (!catItems.length) {
+        slot.innerHTML =
+          '<div class="jn-tray-category">' + CATEGORY_LABELS[cat] + '</div>' +
+          '<div class="jn-tray-empty">未登録</div>';
+        tray.appendChild(slot);
+        return;
+      }
+
+      let best = catItems[0];
+      let bestScore = totalScore(best);
+      catItems.forEach(i => {
+        const s = totalScore(i);
+        if (s.score > bestScore.score) { best = i; bestScore = s; }
+      });
+      picks[cat] = best;
+      const badge = badgeInfo(bestScore.score, bestScore.max);
+      if (badge.cls === 'jn-good') slot.classList.add('jn-good');
+      else if (badge.cls === 'jn-ok') slot.classList.add('jn-ok');
+
+      const sub = (best.genre || best.length)
+        ? '<div class="jn-tray-sub">' + [best.genre, best.length].filter(Boolean).map(escapeHtml).join(' / ') + '</div>'
+        : '';
+
+      slot.innerHTML =
+        '<div class="jn-tray-icon">' + ICONS[cat] + '</div>' +
+        '<div class="jn-tray-meta">' +
+          '<div class="jn-tray-category">' + CATEGORY_LABELS[cat] + '</div>' +
+          '<div class="jn-tray-swatch" style="background:' + colorsToGradient(best.colors) + '"></div>' +
+          '<div class="jn-tray-name">' + escapeHtml(best.name) + '</div>' +
+          sub +
+        '</div>' +
+        '<div class="jn-tray-right"><span class="jn-badge ' + badge.cls + '">' + badge.label + '</span></div>';
+
+      tray.appendChild(slot);
+    });
+
+    renderCohesion(picks);
+  }
+
+  function renderCohesion(picks) {
+    const note = document.getElementById('jn-cohesion');
+    const withMaterial = CATEGORIES.map(c => picks[c]).filter(p => p && p.materialTags.length);
+    if (withMaterial.length < 2) {
+      note.textContent = '';
+      note.classList.remove('jn-good-text');
+      return;
+    }
+    const hasMix = withMaterial.some(p => p.materialTags.includes('ミックスメタル'));
+    const tagSets = withMaterial.map(p => new Set(p.materialTags));
+    let common = tagSets[0];
+    for (let i = 1; i < tagSets.length; i++) {
+      common = new Set([...common].filter(t => tagSets[i].has(t)));
+    }
+    if (common.size > 0 || hasMix) {
+      note.textContent = '素材の雰囲気にも統一感があります';
+      note.classList.add('jn-good-text');
+    } else {
+      note.textContent = 'ヒント: 素材(ゴールド/シルバーなど)を揃えると、より上品にまとまります';
+      note.classList.remove('jn-good-text');
+    }
+  }
+
+  // ---- render: wardrobe ----
+  function renderTabs() {
+    const wrap = document.getElementById('jn-tabs');
+    wrap.innerHTML = '';
+    CATEGORIES.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'jn-tab' + (activeTab === cat ? ' jn-active' : '');
+      btn.textContent = CATEGORY_LABELS[cat];
+      btn.addEventListener('click', () => {
+        activeTab = cat;
+        renderAll();
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  function renderItemList() {
+    const wrap = document.getElementById('jn-item-list-wrap');
+    const catItems = items.filter(i => i.category === activeTab)
+      .slice()
+      .sort((a, b) => totalScore(b).score - totalScore(a).score);
+
+    if (!catItems.length) {
+      wrap.innerHTML = '<div class="jn-empty-msg">まだ' + CATEGORY_LABELS[activeTab] + 'が登録されていません。下のフォームから追加してください。</div>';
+      return;
+    }
+
+    const list = document.createElement('div');
+    list.className = 'jn-item-list';
+    catItems.forEach(item => {
+      const { score, max } = totalScore(item);
+      const badge = badgeInfo(score, max);
+      const row = document.createElement('div');
+      row.className = 'jn-item';
+      const extraTags = [item.genre, item.motion].concat(item.lengths || []).filter(Boolean);
+        '<div class="jn-item-swatch" style="background:' + colorsToGradient(item.colors) + '"></div>' +
+        '<div class="jn-item-info">' +
+          '<div class="jn-item-name">' + escapeHtml(item.name) + '</div>' +
+          '<div class="jn-item-tags">' + tagsHtml + '<span class="jn-badge ' + badge.cls + '">' + badge.label + '</span></div>' +
+        '</div>' +
+        '<div class="jn-item-actions">' +
+          '<button class="jn-item-edit" title="編集" data-id="' + item.id + '">✎</button>' +
+          '<button class="jn-item-delete" title="削除" data-id="' + item.id + '">×</button>' +
+        '</div>';
+      list.appendChild(row);
+    });
+    wrap.innerHTML = '';
+    wrap.appendChild(list);
+
+    wrap.querySelectorAll('.jn-item-edit').forEach(btn => {
+      btn.addEventListener('click', () => startEdit(btn.dataset.id));
+    });
+
+    wrap.querySelectorAll('.jn-item-delete').forEach(btn => {
+      btn.addEventListener('click', () => {
+        items = items.filter(i => i.id !== btn.dataset.id);
+        if (editingId === btn.dataset.id) resetForm();
+        saveItems();
+        renderAll();
+      });
+    });
+  }
+
+  // ---- add form ----
+  let formStyleTags = [];
+  let formMaterialTags = [];
+  let formColors = [{ hex: '#cba135', ratio: 100 }];
+
+  function renderFormTags() {
+    const styleWrap = document.getElementById('jn-item-style-tags');
+    styleWrap.innerHTML = '';
+    STYLE_TAGS.forEach(tag => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'jn-chip jn-small' + (formStyleTags.includes(tag) ? ' jn-active' : '');
+      chip.textContent = tag;
+      chip.addEventListener('click', () => {
+        if (formStyleTags.includes(tag)) formStyleTags = formStyleTags.filter(t => t !== tag);
+        else formStyleTags.push(tag);
+        renderFormTags();
+      });
+      styleWrap.appendChild(chip);
+    });
+
+    const matWrap = document.getElementById('jn-item-material-tags');
+    matWrap.innerHTML = '';
+    MATERIAL_TAGS.forEach(tag => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'jn-chip jn-small' + (formMaterialTags.includes(tag) ? ' jn-active' : '');
+      chip.textContent = tag;
+      chip.addEventListener('click', () => {
+        if (formMaterialTags.includes(tag)) formMaterialTags = formMaterialTags.filter(t => t !== tag);
+        else formMaterialTags.push(tag);
+        renderFormTags();
+      });
+      matWrap.appendChild(chip);
+    });
+
+    renderGenreFormFields();
+    renderColorFields();
+  }
+
+  function renderColorFields() {
+    const wrap = document.getElementById('jn-color-fields');
+    wrap.innerHTML = '';
+    formColors.forEach((c, idx) => {
+      const row = document.createElement('div');
+      row.className = 'jn-color-field-row';
+      let html = '<input type="color" class="jn-color-pick" data-idx="' + idx + '" value="' + c.hex + '">';
+      if (formColors.length > 1) {
+        html +=
+          '<input type="number" class="jn-ratio-input" data-idx="' + idx + '" min="0" max="100" value="' + c.ratio + '">' +
+          '<span class="jn-ratio-suffix">%</span>' +
+          '<button type="button" class="jn-color-remove" data-idx="' + idx + '" title="この色を削除">×</button>';
+      } else {
+        html += '<span class="jn-ratio-suffix">100%</span>';
+      }
+      row.innerHTML = html;
+      wrap.appendChild(row);
+    });
+
+    wrap.querySelectorAll('.jn-color-pick').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        formColors[+e.target.dataset.idx].hex = e.target.value;
+      });
+    });
+    wrap.querySelectorAll('.jn-ratio-input').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        const v = Math.max(0, Math.min(100, parseInt(e.target.value, 10) || 0));
+        formColors[+e.target.dataset.idx].ratio = v;
+      });
+    });
+    wrap.querySelectorAll('.jn-color-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        formColors.splice(+btn.dataset.idx, 1);
+        equalizeRatios(formColors);
+        renderColorFields();
+      });
+    });
+
+    const addBtn = document.getElementById('jn-add-color');
+    addBtn.hidden = formColors.length >= 3;
+  }
+
+  function renderGenreFormFields() {
+    const genreWrap = document.getElementById('jn-item-genre-tags');
+    genreWrap.innerHTML = '';
+    const genres = GENRE_OPTIONS_BY_CATEGORY[activeTab] || [];
+    genres.forEach(g => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'jn-chip jn-small' + (formGenre === g ? ' jn-active' : '');
+      chip.textContent = g;
+      chip.addEventListener('click', () => {
+        formGenre = formGenre === g ? '' : g;
+        renderGenreFormFields();
+      });
+      genreWrap.appendChild(chip);
+    });
+
+    const lengthField = document.getElementById('jn-length-field');
+    lengthField.style.display = activeTab === 'necklace' ? '' : 'none';
+    if (activeTab === 'necklace') {
+      const lengthWrap = document.getElementById('jn-item-length-tags');
+      lengthWrap.innerHTML = '';
+      NECKLACE_LENGTHS.forEach(l => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'jn-chip jn-small' + (formLengths.includes(l) ? ' jn-active' : '');
+        chip.textContent = l;
+        chip.addEventListener('click', () => {
+          if (formLengths.includes(l)) formLengths = formLengths.filter(x => x !== l);
+          else formLengths.push(l);
+          renderGenreFormFields();
+        });
+        lengthWrap.appendChild(chip);
+      });
+    }
+
+    const motionField = document.getElementById('jn-motion-field');
+    motionField.style.display = activeTab === 'earring' ? '' : 'none';
+    if (activeTab === 'earring') {
+      const motionWrap = document.getElementById('jn-item-motion-icons');
+      motionWrap.innerHTML = '';
+      EARRING_MOTION_OPTIONS.forEach(m => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'jn-icon-choice' + (formMotion === m ? ' jn-active' : '');
+        card.innerHTML =
+          '<span class="jn-icon-choice-svg">' + EARRING_MOTION_ICONS[m] + '</span>' +
+          '<span class="jn-icon-choice-label">' + m + '</span>';
+        card.addEventListener('click', () => {
+          formMotion = formMotion === m ? '' : m;
+          renderGenreFormFields();
+        });
+        motionWrap.appendChild(card);
+      });
+    }
+  }
+
+  // ---- photo upload ----
+  function renderPhotoPreview() {
+    const preview = document.getElementById('jn-photo-preview');
+    const clear = document.getElementById('jn-photo-clear');
+    if (formPhoto) {
+      preview.innerHTML = '<img src="' + formPhoto + '" alt="">';
+      clear.hidden = false;
+    } else {
+      preview.innerHTML = '';
+      clear.hidden = true;
+    }
+  }
+
+  function readAndResizeImage(file, maxDim, callback) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w >= h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
+        else if (h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        callback(canvas.toDataURL('image/jpeg', 0.75));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function setupPhotoInput() {
+    const input = document.getElementById('jn-item-photo');
+    const clear = document.getElementById('jn-photo-clear');
+    input.addEventListener('change', () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      readAndResizeImage(file, 320, (dataUrl) => {
+        formPhoto = dataUrl;
+        renderPhotoPreview();
+      });
+    });
+    clear.addEventListener('click', () => {
+      formPhoto = '';
+      input.value = '';
+      renderPhotoPreview();
+    });
+  }
+
+  // ---- gallery ----
+  function galleryCard(item) {
+    let imgHtml;
+    if (item.photo) {
+      imgHtml = '<img src="' + item.photo + '" alt="">';
+    } else {
+      const dom = dominantColor(item.colors);
+      const variants = ICON_VARIANTS[item.category] || {};
+      const icon = (item.genre && variants[item.genre]) || ICONS_LARGE[item.category];
+      imgHtml =
+        '<div class="jn-gallery-illust" style="background:' + galleryBackground(item.colors) + '">' +
+          '<div class="jn-gallery-icon-wrap" style="color:' + dom.hex + '">' + icon + '</div>' +
+          '<span class="jn-sparkle jn-sparkle-1">✦</span>' +
+          '<span class="jn-sparkle jn-sparkle-2">✧</span>' +
+        '</div>';
+    }
+    const extraTags = [item.genre, item.motion].concat(item.lengths || []).filter(Boolean);
+    const tagsHtml = item.styleTags.concat(item.materialTags, extraTags)
+      .slice(0, 3)
+      .map(t => '<span class="jn-item-tag">' + escapeHtml(t) + '</span>')
+      .join('');
+    return '<div class="jn-gallery-card">' +
+      '<div class="jn-gallery-img">' + imgHtml + '</div>' +
+      '<div class="jn-gallery-name">' + escapeHtml(item.name) + '</div>' +
+      '<div class="jn-gallery-tags">' + tagsHtml + '</div>' +
+    '</div>';
+  }
+
+  function renderGalleryTabs() {
+    const wrap = document.getElementById('jn-gallery-tabs');
+    wrap.innerHTML = '';
+    const opts = [['all', 'すべて']].concat(CATEGORIES.map(c => [c, CATEGORY_LABELS[c]]));
+    opts.forEach(([key, label]) => {
+      const btn = document.createElement('button');
+      btn.className = 'jn-tab' + (galleryTab === key ? ' jn-active' : '');
+      btn.textContent = label;
+      btn.addEventListener('click', () => {
+        galleryTab = key;
+        renderGallery();
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  function renderGallery() {
+    renderGalleryTabs();
+    const grid = document.getElementById('jn-gallery-grid');
+    const filtered = galleryTab === 'all' ? items : items.filter(i => i.category === galleryTab);
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="jn-empty-msg">' +
+        (items.length ? '該当するアイテムがありません' : 'アクセサリーを登録すると、ここに並びます') +
+        '</div>';
+      return;
+    }
+    grid.innerHTML = filtered.map(galleryCard).join('');
+  }
+
+  // ---- suggestions ----
+  function getSuggestions() {
+    const tips = [];
+
+    CATEGORIES.forEach(cat => {
+      if (!items.some(i => i.category === cat)) {
+        tips.push(CATEGORY_LABELS[cat] + 'がまだ登録されていません。まずは1つ登録してみましょう。');
+      }
+    });
+
+    if (items.length) {
+      const materials = new Set(items.flatMap(i => i.materialTags));
+      if (!materials.has('ゴールド') && !materials.has('ミックスメタル')) {
+        tips.push('ゴールド系のアイテムがありません。暖色系の服にも合わせやすく、1つあると活躍します。');
+      }
+      if (!materials.has('シルバー') && !materials.has('ミックスメタル')) {
+        tips.push('シルバー系のアイテムがありません。クールカラーの服やきちんと見えする装いに重宝します。');
+      }
+
+      if (items.some(i => i.category === 'necklace')) {
+        const necklaceLengths = new Set(items.filter(i => i.category === 'necklace').flatMap(i => i.lengths || []));
+        NECKLACE_LENGTHS.forEach(len => {
+          if (!necklaceLengths.has(len)) tips.push(LENGTH_GAP_MESSAGE[len]);
+        });
+      }
+
+      const styles = new Set(items.flatMap(i => i.styleTags));
+      const casualGroup = ['カジュアル', 'ストリート', 'ナチュラル', 'ガーリー'];
+      const formalGroup = ['フォーマル', 'きれいめ', 'モード'];
+      if (![...styles].some(t => casualGroup.includes(t))) {
+        tips.push('カジュアルな日に使いやすいアクセサリーが少なめです。普段使いしやすい一品を増やすと出番が増えそうです。');
+      }
+      if (![...styles].some(t => formalGroup.includes(t))) {
+        tips.push('きちんと見えする日向けのアクセサリーが少なめです。フォーマルやきれいめの予定がある時のために1つあると安心です。');
+      }
+    }
+
+    if (!tips.length) {
+      tips.push('カテゴリ・色・素材のバランスが良いコレクションです。新しいアイテムを登録すると、ここの提案も更新されます。');
+    }
+    return tips.slice(0, 5);
+  }
+
+  function renderSuggestions() {
+    const wrap = document.getElementById('jn-suggestions');
+    const tips = getSuggestions();
+    wrap.innerHTML = '<div class="jn-suggestion-list">' +
+      tips.map(t => '<div class="jn-suggestion-item"><span class="jn-suggestion-icon">◆</span><span>' + escapeHtml(t) + '</span></div>').join('') +
+    '</div>';
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function resetForm() {
+    editingId = null;
+    document.getElementById('jn-item-name').value = '';
+    formStyleTags = [];
+    formMaterialTags = [];
+    formGenre = '';
+    formLengths = [];
+    formMotion = '';
+    formPhoto = '';
+    formColors = [{ hex: '#cba135', ratio: 100 }];
+    document.getElementById('jn-item-photo').value = '';
+    renderFormTags();
+    renderPhotoPreview();
+    updateFormMode();
+  }
+
+  function updateFormMode() {
+    const submitBtn = document.getElementById('jn-submit-btn');
+    const cancelBtn = document.getElementById('jn-cancel-edit');
+    submitBtn.textContent = editingId ? 'この内容で更新する' : 'アクセサリーを追加';
+    cancelBtn.hidden = !editingId;
+  }
+
+  function startEdit(id) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    editingId = id;
+    activeTab = item.category;
+    document.getElementById('jn-item-name').value = item.name;
+    formColors = (item.colors && item.colors.length ? item.colors : [{ hex: item.color || '#cba135', ratio: 100 }]).map(c => ({ hex: c.hex, ratio: c.ratio }));
+    formStyleTags = item.styleTags.slice();
+    formMaterialTags = item.materialTags.slice();
+    formGenre = item.genre || '';
+    formLengths = (item.lengths && item.lengths.length) ? item.lengths.slice() : (item.length ? [item.length] : []);
+    formMotion = item.motion || '';
+    formPhoto = item.photo || '';
+    document.getElementById('jn-add-form').hidden = false;
+    document.getElementById('jn-status').textContent = '';
+    renderFormTags();
+    renderPhotoPreview();
+    renderAll();
+    updateFormMode();
+    document.getElementById('jn-add-form').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function setupAddForm() {
+    const toggle = document.getElementById('jn-add-toggle');
+    const form = document.getElementById('jn-add-form');
+    const cancelBtn = document.getElementById('jn-cancel-edit');
+    const addColorBtn = document.getElementById('jn-add-color');
+
+    addColorBtn.addEventListener('click', () => {
+      if (formColors.length >= 3) return;
+      formColors.push({ hex: '#cba135', ratio: 0 });
+      equalizeRatios(formColors);
+      renderColorFields();
+    });
+
+    toggle.addEventListener('click', () => {
+      form.hidden = !form.hidden;
+      if (form.hidden) resetForm();
+      const section = form.closest('.jn-step');
+      section.classList.toggle('jn-form-open', !form.hidden);
+      const header = document.getElementById('jn-form-header');
+      if (header) header.textContent = editingId ? 'アクセサリーを編集中' : '新しいアクセサリーを追加';
+      toggle.textContent = form.hidden ? '+ アクセサリーを追加する' : '閉じる';
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      resetForm();
+      const status = document.getElementById('jn-status');
+      status.textContent = '編集をキャンセルしました';
+      setTimeout(() => { status.textContent = ''; }, 2000);
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nameInput = document.getElementById('jn-item-name');
+      const status = document.getElementById('jn-status');
+      const name = nameInput.value.trim();
+      if (!name) {
+        status.textContent = '名前を入力してください';
+        return;
+      }
+      const data = {
+        category: activeTab,
+        name: name,
+        colors: normalizeColors(formColors),
+        photo: formPhoto,
+        styleTags: formStyleTags.slice(),
+        materialTags: formMaterialTags.slice(),
+        genre: formGenre,
+        lengths: activeTab === 'necklace' ? formLengths.slice() : [],
+        motion: activeTab === 'earring' ? formMotion : '',
+      };
+
+      if (editingId) {
+        const idx = items.findIndex(i => i.id === editingId);
+        if (idx !== -1) items[idx] = Object.assign({}, items[idx], data);
+        status.textContent = '「' + name + '」を更新しました';
+      } else {
+        data.id = 'item-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+        items.push(data);
+        status.textContent = CATEGORY_LABELS[activeTab] + 'に「' + name + '」を追加しました';
+      }
+
+      saveItems();
+      resetForm();
+      renderAll();
+      setTimeout(() => { status.textContent = ''; }, 2500);
+    });
+  }
+
+  // ---- main render ----
+  function renderAll() {
+    renderColorSwatches();
+    renderOutfitTags();
+    renderNecklineChips();
+    renderHairstyleChips();
+    renderTray();
+    renderTabs();
+    renderItemList();
+    renderGenreFormFields();
+    renderGallery();
+    renderSuggestions();
+    const toggle = document.getElementById('jn-add-toggle');
+    const form = document.getElementById('jn-add-form');
+    const section = form.closest('.jn-step');
+    section.classList.toggle('jn-form-open', !form.hidden);
+    toggle.textContent = form.hidden ? '+ ' + CATEGORY_LABELS[activeTab] + 'を追加する' : '閉じる';
+  }
+
+  // ---- init ----
+  (async function init() {
+    await load();
+    renderFormTags();
+    setupAddForm();
+    setupPhotoInput();
+    renderPhotoPreview();
+    renderAll();
+  })();
+})();
+</script>
